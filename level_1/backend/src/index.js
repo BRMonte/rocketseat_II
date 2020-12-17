@@ -17,27 +17,22 @@ app.use(express.json());
  * route params: identificar recursos p deletar ou atualizar
  * request body: conteudo de criar e editar recurso (JSON)
  */
+const projects = [];
 
 app.get('/projects', (request, response) => {
-  const query = request.query;
+  //const query = request.query;
 
-  console.log(query);
+  //console.log(query);
 
-  return response.json([
-    'Primeiro freella do Brunao',
-    'Segundo freella do Brunao'
-   ]);
+  return response.json(projects);
 });
 
 app.post('/projects', (request, response) => {
-  const body = request.body;
-  console.log(body)
+  const {title, owner} = request.body;
 
-  return response.json([
-    'Primeiro freella do Brunao',
-    'Segundo freella do Brunao',
-    'Compra do ape pro meu pai'
-  ]);
+  const projects = { title, owner };
+
+  return response.json();
 });
 
 app.put('/projects/:id', (request, response) => {
