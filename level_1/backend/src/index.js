@@ -1,6 +1,6 @@
 const { request, response } = require('express');
 const express = require('express');
-const { uuid } = require('uuidv4');
+const { uuid, isUuid } = require('uuidv4');
 
 const app = express();
 
@@ -19,10 +19,39 @@ app.use(express.json());
  * query params: usado mais para filtros e paginacao.
  * route params: identificar recursos p deletar ou atualizar
  * request body: conteudo de criar e editar recurso (JSON)
+ *
+ * MIDDLEWARE
+ * e um interceptador de requisicoes
+ * pode interromper a requisicao: quando NEXT nao e chamado no corpo do middleware
+ * ou alterar os dados da requisicao
+ * todas as rotas abaixo sao middlewares
  */
+
 const projects = [];
 
-app.get('/projects', (request, response) => {
+function logRequests(request, response, next) { //MIDDLEWARE
+  const { method, url } = request;
+
+  const logLabel = `[${method.toUpperCase()}] ${url}`;
+
+  console.log(logLabel);
+
+  return next();
+}
+
+function validateProjectId(request, response, next) {
+  const { id } = request.params;
+
+  if (!isUuid(id)) {
+    return response.status(400).json({ error: 'Invalid project ID.' }); //se um return response esta no corpo da uncao do Middleware, nada do que vem depois sera executado
+  }
+
+  return next();
+}
+
+app.use(logRequests)
+
+app.get('/projects', validateProjectId, (request, response) => {
   //const query = request.query;
 
   //console.log(query);
@@ -30,7 +59,7 @@ app.get('/projects', (request, response) => {
   return response.json(projects);
 });
 
-app.post('/projects', (request, response) => {
+app.post('/projects', validateProjectId, (request, response) => {
   const {title, owner} = request.body;
 
   const project = { id: uuid(), title, owner };
@@ -40,7 +69,7 @@ app.post('/projects', (request, response) => {
   return response.json(project);
 });
 
-app.put('/projects/:id', (request, response) => {
+app.put('/projects/:id', validateProjectId, (request, response) => {
   const { id } = request.params;
 
   const projectIndex = projects.findIndex(project => project.id === id);
@@ -60,7 +89,7 @@ app.put('/projects/:id', (request, response) => {
   return response.json(project);
 })
 
-app.delete('/projects/:id', (request, response) => {
+app.delete('/projects/:id', validateProjectId, (request, response) => {
   const { id } = request.params;
 
   const projectIndex = projects.findIndex(project => project.id === id);
