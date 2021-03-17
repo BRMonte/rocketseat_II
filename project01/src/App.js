@@ -1,4 +1,4 @@
-import './styles/global.css';
+import './styles/global.scss';
 import RepositoryList from './components/RepositoryList';
 
 const App = () => {
